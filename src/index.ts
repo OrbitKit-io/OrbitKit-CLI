@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OrbitKit CLI — compliance hosting for iOS developers.
+ * OrbitKit CLI — App Store compliance hosting for iOS developers.
  * Wraps the OrbitKit REST API for use in terminals and CI/CD pipelines.
  *
  * Authentication: ORBITKIT_API_KEY environment variable (no stored credentials).
@@ -29,7 +29,7 @@ const program = new Command();
 
 program
   .name("orbitkit")
-  .description("CLI for OrbitKit — compliance hosting for iOS developers")
+  .description("CLI for OrbitKit — App Store compliance hosting for iOS developers")
   .version("1.0.0")
   .option("--json", "Output as JSON (machine-readable)")
   .option("--debug", "Enable debug output")

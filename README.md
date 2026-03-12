@@ -1,6 +1,6 @@
 # OrbitKit CLI
 
-Command-line interface for [OrbitKit](https://orbitkit.io) — compliance hosting for iOS developers. Manage your apps, privacy policies, support pages, app site association files, and deployments from the terminal or CI/CD pipelines.
+Command-line interface for [OrbitKit](https://orbitkit.io) — App Store compliance hosting for iOS developers. Manage your apps, privacy policies, support pages, app site association files, and deployments from the terminal or CI/CD pipelines.
 
 ## Installation
 
