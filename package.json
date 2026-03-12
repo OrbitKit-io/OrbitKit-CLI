@@ -1,7 +1,7 @@
 {
   "name": "@orbitkit-io/cli",
-  "version": "1.0.1",
-  "description": "CLI for OrbitKit — privacy policy hosting for iOS developers",
+  "version": "1.0.2",
+  "description": "CLI for OrbitKit — compliance hosting for iOS developers",
   "bin": {
     "orbitkit": "dist/index.js"
   },
