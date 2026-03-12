@@ -96,4 +96,36 @@ export class OrbitKitClient {
   upload<T = unknown>(path: string, buffer: Buffer, contentType = "application/octet-stream"): Promise<ApiResponse<T>> {
     return this.request<T>("POST", path, buffer, contentType);
   }
+
+  /** Upload a file as multipart/form-data (for icon uploads). */
+  async uploadForm<T = unknown>(path: string, buffer: Buffer, fileName: string, mimeType: string): Promise<ApiResponse<T>> {
+    const url = `${this.baseUrl}${path}`;
+    const form = new FormData();
+    form.append("file", new Blob([buffer as unknown as BlobPart], { type: mimeType }), fileName);
+
+    if (this.debug) {
+      process.stderr.write(`[debug] POST ${url} (multipart)\n`);
+    }
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+      body: form,
+    });
+
+    const requestId = res.headers.get("x-request-id") || undefined;
+    let data: T;
+    const text = await res.text();
+    try {
+      data = JSON.parse(text) as T;
+    } catch {
+      data = text as unknown as T;
+    }
+
+    if (this.debug) {
+      process.stderr.write(`[debug] ${res.status} ${requestId || ""}\n`);
+    }
+
+    return { ok: res.ok, status: res.status, data, requestId };
+  }
 }

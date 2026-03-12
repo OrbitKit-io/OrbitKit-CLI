@@ -26,7 +26,7 @@ export function registerSupportCommands(program: Command, env: EnvConfig): void 
     .command("set")
     .description("Upload support page from JSON file")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
-    .argument("<file>", "Path to JSON file")
+    .argument("[file]", "Path to JSON file")
     .action(async (argAppId: string, file?: string) => {
       requireApiKey(env);
       let appId: string;

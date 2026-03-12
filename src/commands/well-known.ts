@@ -18,7 +18,7 @@ export function registerWellKnownCommands(program: Command, env: EnvConfig): voi
     .command("upload")
     .description("Upload a well-known file")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
-    .argument("<file>", "Path to the file")
+    .argument("[file]", "Path to the file")
     .option("--name <fileName>", "Override file name (auto-detected from path)")
     .action(async (argAppId: string, file?: string, opts?: { name?: string }) => {
       requireApiKey(env);

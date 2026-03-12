@@ -46,7 +46,7 @@ export function registerSiteCommands(program: Command, env: EnvConfig): void {
     .command("icon")
     .description("Upload app icon")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
-    .argument("<file>", "Path to icon image (PNG/JPEG, max 2MB)")
+    .argument("[file]", "Path to icon image (PNG/JPEG, max 2MB)")
     .action(async (argAppId: string, file?: string) => {
       requireApiKey(env);
       let appId: string;
@@ -60,9 +60,10 @@ export function registerSiteCommands(program: Command, env: EnvConfig): void {
       }
       const buffer = fs.readFileSync(filePath);
       const ext = filePath.toLowerCase().split(".").pop();
-      const mime = ext === "png" ? "image/png" : "image/jpeg";
+      const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+      const fileName = filePath.split("/").pop() || "icon.png";
       const client = new OrbitKitClient(env);
-      const res = await client.upload(`/api/apps/${encodeURIComponent(appId)}/site/icon`, buffer, mime);
+      const res = await client.uploadForm(`/api/apps/${encodeURIComponent(appId)}/site/icon`, buffer, fileName, mime);
       assertOk(res);
       printSuccess("Icon uploaded.");
     });
@@ -76,7 +77,7 @@ export function registerSiteCommands(program: Command, env: EnvConfig): void {
     .command("set")
     .description("Set custom domain")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
-    .argument("<domain>", "Domain name (e.g., privacy.myapp.com)")
+    .argument("[domain]", "Domain name (e.g., privacy.myapp.com)")
     .action(async (argAppId: string, domainArg?: string) => {
       requireApiKey(env);
       let appId: string;
