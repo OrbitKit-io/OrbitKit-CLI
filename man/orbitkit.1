@@ -1,0 +1,470 @@
+.\" Man page for the OrbitKit CLI
+.\" Generate with: groff -man -Tascii orbitkit.1
+.TH ORBITKIT 1 "2026-03-12" "1.0.0" "OrbitKit CLI Manual"
+.
+.SH NAME
+orbitkit \- CLI for OrbitKit privacy policy hosting for iOS developers
+.
+.SH SYNOPSIS
+.B orbitkit
+.RI [ global-options ]
+.I command
+.RI [ command-options ]
+.RI [ arguments ]
+.
+.SH DESCRIPTION
+.B orbitkit
+is a command-line interface for the OrbitKit platform, which hosts
+privacy policies, support pages, data deletion pages, TestFlight
+landing pages, and Apple App Site Association files for iOS apps.
+.PP
+The CLI wraps the OrbitKit REST API, enabling automation from CI/CD
+pipelines, shell scripts, and developer terminals. It uses API key
+authentication via environment variables \(em no credentials are
+stored on disk.
+.PP
+All app-scoped commands accept an optional
+.I appId
+argument. If omitted, the value of
+.B ORBITKIT_APP_ID
+is used.
+.
+.SH GLOBAL OPTIONS
+.TP
+.B \-\-json
+Output all results as JSON. Useful for scripting and piping to
+.BR jq (1).
+.TP
+.B \-\-debug
+Enable debug output (HTTP requests, response codes, request IDs).
+Debug output is written to stderr so it does not interfere with
+stdout data.
+.TP
+.BR \-V ", " \-\-version
+Print version number and exit.
+.TP
+.BR \-h ", " \-\-help
+Display help for the given command or the main program.
+.
+.SH COMMANDS
+.SS Account
+.TP
+.B whoami
+Display the authenticated user's email, name, app count, and
+subscription status. Useful for verifying that your API key is
+valid and correctly configured.
+.
+.SS App Management
+.TP
+.BI "apps list"
+List all apps in the account. Output includes app ID, name, and
+creation date.
+.TP
+.BI "apps create " name
+Create a new app with the given display name. Prints the new app ID
+on success.
+.TP
+.BI "apps delete " appId " " [ \-y ]
+Delete an app and all its associated data (site, policy, pages,
+well-known files, deploy history). Prompts for confirmation unless
+.B \-y
+is passed.
+.B This action is irreversible.
+.
+.SS Deploy
+.TP
+.BI "deploy " [ appId ]
+Deploy the app's site to production. Renders all configured pages
+(privacy policy, support, deletion, TestFlight, nutrition labels)
+and publishes them. Requires an active subscription.
+.TP
+.BI "deploy\-history " [ appId ]
+Show the deploy history for the app. Lists deploy timestamps,
+included pages, and site URLs. Newest deploys are listed first
+(max 50 entries).
+.
+.SS Privacy Policy
+.TP
+.BI "policy get " [ appId ]
+Print the current privacy policy wizard data as JSON.
+.TP
+.BI "policy set " [ appId ] " " file
+Upload a privacy policy from a JSON file. The file should match
+the OrbitKit policy schema (see the API docs for field definitions).
+.
+.SS Site Configuration
+.TP
+.BI "site get " [ appId ]
+Print the current site configuration (name, slug, icon URL,
+domain, subscription status).
+.TP
+.BI "site update " [ appId ] " " [ \-\-name " " name ] " " [ \-\-description " " desc ] " " [ \-\-slug " " slug ]
+Update site properties. Only provided fields are changed.
+.TP
+.BI "site icon " [ appId ] " " file
+Upload an app icon (PNG or JPEG, max 2\ MB). The icon is
+automatically processed: resized, re-encoded to strip EXIF
+payloads, and the dominant color is extracted for theming.
+.TP
+.BI "site domain set " [ appId ] " " domain
+Configure a custom domain (e.g., privacy.myapp.com). Returns
+DNS instructions (CNAME record) that must be configured at
+your DNS provider.
+.TP
+.BI "site domain status " [ appId ]
+Check the DNS verification and SSL provisioning status for the
+custom domain. Status values:
+.B pending_dns
+(CNAME not yet detected),
+.B pending_ssl
+(DNS verified, SSL certificate being issued),
+.B active
+(fully configured),
+.B error
+(configuration issue).
+.TP
+.BI "site domain remove " [ appId ]
+Remove the custom domain and associated SSL certificate.
+.
+.SS Support Page
+.TP
+.BI "support get " [ appId ]
+Print the support page configuration.
+.TP
+.BI "support set " [ appId ] " " file
+Upload support page configuration from a JSON file. Required
+fields: contactEmail, faqItems (array). Optional: contactPhone,
+contactUrl, contactAddress, supportHours, additionalInfo.
+.
+.SS Data Deletion Page
+.TP
+.BI "deletion get " [ appId ]
+Print the data deletion page configuration.
+.TP
+.BI "deletion set " [ appId ] " " file
+Upload data deletion page from a JSON file. Required fields:
+supportsAccounts (boolean), deletionMethods, deletionSteps,
+deletionTimeline.
+.
+.SS AASA (Apple App Site Association)
+.TP
+.BI "aasa get " [ appId ]
+Print the AASA configuration (Universal Links, App Clips,
+Web Credentials, Handoff).
+.TP
+.BI "aasa set " [ appId ] " " file
+Upload AASA configuration from a JSON file. The file should
+contain universalLinks, appClips, webCredentials, and/or
+activityContinuation objects. Each contains an appIDs array
+with entries in the format "TEAMID.com.example.app".
+.
+.SS Smart App Banner
+.TP
+.BI "banner get " [ appId ]
+Print the Smart App Banner configuration.
+.TP
+.BI "banner set " [ appId ] " " file
+Upload Smart App Banner config from a JSON file. Required:
+appStoreId (numeric string). Optional: affiliateData,
+appArgument, appClipBundleId, appClipDisplay.
+.
+.SS Well-Known Files
+.TP
+.BI "well\-known upload " [ appId ] " " file " " [ \-\-name " " fileName ]
+Upload a well-known domain verification file. The file name is
+auto-detected from the path, or can be overridden with
+.BR \-\-name .
+Supported files:
+.RS
+.IP \(bu 3
+.B apple\-developer\-domain\-association.txt
+\(em Sign in with Apple domain verification
+.IP \(bu 3
+.B apple\-developer\-merchantid\-domain\-association
+\(em Apple Pay merchant domain verification
+.IP \(bu 3
+.B apple\-wallet\-order\-type\-association
+\(em Apple Wallet Order Tracking domain verification
+.RE
+.
+.SS TestFlight Page
+.TP
+.BI "testflight get " [ appId ]
+Print the TestFlight landing page configuration.
+.TP
+.BI "testflight set " [ appId ] " " file
+Upload TestFlight page config from a JSON file. Required fields:
+enabled (boolean), testFlightUrl (https://testflight.apple.com/join/XXXXXX),
+feedbackEmail. Optional: betaDescription (max 2000 chars),
+requirements (max 500 chars).
+.
+.SH ENVIRONMENT
+.TP
+.B ORBITKIT_API_KEY
+.RI ( required )
+API key for authentication. Keys use the
+.B ok_
+prefix, which enables GitHub secret scanning auto-detection.
+Create keys in the OrbitKit dashboard under Settings \(-> API Keys.
+.TP
+.B ORBITKIT_APP_ID
+.RI ( optional )
+Default app ID used when the
+.I appId
+argument is omitted from app-scoped commands.
+.TP
+.B ORBITKIT_API_ENDPOINT
+.RI ( optional )
+Override the API base URL. Default:
+.BR https://api.orbitkit.io .
+Useful for development or self-hosted instances.
+.TP
+.B ORBITKIT_DEBUG
+Set to
+.B 1
+to enable debug output (equivalent to
+.BR \-\-debug ).
+.TP
+.B NO_COLOR
+Disable colored output per the
+.UR https://no-color.org/
+no-color.org
+.UE
+standard. Also respected:
+.BR ORBITKIT_NO_COLOR .
+.
+.SH EXIT CODES
+.TP
+.B 0
+Success.
+.TP
+.B 1
+General error (server error, network failure, unknown error).
+.TP
+.B 2
+Validation error (invalid input, missing argument, bad file format).
+Error codes beginning with
+.B E2
+indicate validation issues.
+.TP
+.B 3
+Authentication error (missing or invalid API key, insufficient
+permissions). Error codes beginning with
+.B E3
+indicate auth issues.
+.TP
+.B 130
+Interrupted by SIGINT (Ctrl+C).
+.
+.SH ERROR CODES
+All errors include a trackable code for documentation lookup:
+.TP
+.B E2001
+App ID required but not provided.
+.TP
+.B E2002
+Invalid JSON file format.
+.TP
+.B E2003
+File not found.
+.TP
+.B E3001
+API key not set.
+.TP
+.B E5001
+Cannot connect to API (network error).
+.PP
+API-level errors use standard codes:
+.BR UNAUTHORIZED ", " FORBIDDEN ", "
+.BR NOT_FOUND ", " VALIDATION_FAILED ", "
+.BR SUBSCRIPTION_REQUIRED ", " RATE_LIMITED ", "
+.BR APP_LIMIT_REACHED ", " DEPLOY_FAILED .
+.
+.SH EXAMPLES
+.SS Verify your API key
+.PP
+.nf
+.RS
+$ export ORBITKIT_API_KEY=ok_BRTRKF...
+$ orbitkit whoami
+Email   user@example.com
+Name    Jane Developer
+Apps    3
+.RE
+.fi
+.
+.SS List apps and deploy
+.PP
+.nf
+.RS
+$ orbitkit apps list
+App ID         Name              Created
+\-\-\-\-\-\-\-\-\-\-\-\-\-  \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-  \-\-\-\-\-\-\-\-\-\-
+\-NtestApp123   My Weather App    3/15/2025
+
+$ orbitkit deploy \-NtestApp123
+\(ok Deployed: https://sites.orbitkit.io/my-weather-app/
+.RE
+.fi
+.
+.SS Use with a default app ID
+.PP
+.nf
+.RS
+$ export ORBITKIT_APP_ID=\-NtestApp123
+$ orbitkit site get
+$ orbitkit policy get
+$ orbitkit deploy
+.RE
+.fi
+.
+.SS Upload a privacy policy from a file
+.PP
+.nf
+.RS
+$ orbitkit policy set policy.json
+\(ok Policy updated.
+
+$ orbitkit deploy
+\(ok Deployed: https://sites.orbitkit.io/my-weather-app/
+.RE
+.fi
+.
+.SS Configure a TestFlight landing page
+.PP
+.nf
+.RS
+$ cat testflight.json
+{
+  "enabled": true,
+  "testFlightUrl": "https://testflight.apple.com/join/AbCdEf",
+  "feedbackEmail": "beta@myapp.com",
+  "betaDescription": "Test the new photo filters",
+  "requirements": "iOS 17.0+, iPhone only"
+}
+
+$ orbitkit testflight set testflight.json
+\(ok TestFlight page updated.
+.RE
+.fi
+.
+.SS Upload a well-known file
+.PP
+.nf
+.RS
+$ orbitkit well\-known upload apple\-developer\-merchantid\-domain\-association
+\(ok Uploaded apple\-developer\-merchantid\-domain\-association
+.RE
+.fi
+.
+.SS Set up a custom domain
+.PP
+.nf
+.RS
+$ orbitkit site domain set privacy.myapp.com
+domain          privacy.myapp.com
+status          pending_dns
+dnsInstructions Add a CNAME record: privacy.myapp.com -> sites.orbitkit.io
+
+$ orbitkit site domain status
+domain          privacy.myapp.com
+dnsVerified     true
+sslProvisioned  true
+status          active
+.RE
+.fi
+.
+.SS JSON output for scripting
+.PP
+.nf
+.RS
+$ orbitkit \-\-json apps list | jq '.[].appId'
+"\-NtestApp123"
+"\-NprodApp456"
+
+$ SITE_URL=$(orbitkit \-\-json deploy | jq \-r '.url')
+$ echo "Deployed to $SITE_URL"
+.RE
+.fi
+.
+.SS Use in CI/CD (GitHub Actions)
+.PP
+.nf
+.RS
+env:
+  ORBITKIT_API_KEY: ${{ secrets.ORBITKIT_API_KEY }}
+  ORBITKIT_APP_ID: ${{ vars.ORBITKIT_APP_ID }}
+
+steps:
+  \- run: npx orbitkit deploy
+.RE
+.fi
+.
+.SH SECURITY
+.TP
+.B No stored credentials
+Authentication is via the
+.B ORBITKIT_API_KEY
+environment variable only. No credentials are written to disk,
+no login sessions are persisted, and no config files store secrets.
+.TP
+.B Key masking
+The API key is never printed in full. Display uses the format
+.BR ok_BRTRKF...XXHCG .
+.TP
+.B Secret scanning
+The
+.B ok_
+key prefix enables automatic detection by
+.UR https://docs.github.com/en/code-security/secret-scanning
+GitHub secret scanning
+.UE ,
+alerting you if a key is accidentally committed to a repository.
+.TP
+.B Input validation
+All inputs are validated before sending to the API. File paths and
+user-provided strings are not interpolated into shell commands.
+.
+.SH FILES
+.TP
+.I cli/scripts/validate\-aasa.sh
+Xcode Build Phase script for validating AASA configuration against
+your app's entitlements. See
+.BR orbitkit\-validate\-aasa (1).
+.
+.SH COMPATIBILITY
+Requires Node.js 22 or later (uses built-in
+.BR fetch ).
+Tested on macOS, Linux, and Windows (via WSL or PowerShell).
+.PP
+Terminal color output respects the
+.B NO_COLOR
+standard and degrades gracefully on dumb terminals.
+.
+.SH BUGS
+Report bugs at
+.UR https://github.com/IamGoodBad/OrbitKit-CLI/issues
+.UE .
+.
+.SH SEE ALSO
+.TP
+OrbitKit Dashboard:
+.UR https://orbitkit.io/dashboard
+.UE
+.TP
+API Documentation:
+.UR https://orbitkit.io/api
+.UE
+.TP
+Apple TestFlight:
+.UR https://developer.apple.com/testflight/
+.UE
+.TP
+Apple App Site Association:
+.UR https://developer.apple.com/documentation/bundleresources/applinks
+.UE
+.
+.SH AUTHORS
+OrbitKit Team
+.UR https://orbitkit.io
+.UE

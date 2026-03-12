@@ -1,0 +1,39 @@
+{
+  "name": "orbitkit",
+  "version": "1.0.0",
+  "description": "CLI for OrbitKit — privacy policy hosting for iOS developers",
+  "bin": {
+    "orbitkit": "./dist/index.js"
+  },
+  "man": "./man/orbitkit.1",
+  "files": [
+    "dist",
+    "man",
+    "scripts"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "ios",
+    "privacy-policy",
+    "app-store",
+    "testflight",
+    "apple",
+    "cli"
+  ],
+  "license": "MIT"
+}
