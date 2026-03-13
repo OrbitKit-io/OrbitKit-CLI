@@ -130,7 +130,7 @@ orbitkit deploy
 
 ### GitHub Actions
 
-Use the [OrbitKit Deploy](https://github.com/IamGoodBad/OrbitKit-Deploy) action for simple deploys, or the CLI for more complex workflows:
+Use the [OrbitKit Deploy](https://github.com/OrbitKit-io/OrbitKit-Deploy) action for simple deploys, or the CLI for more complex workflows:
 
 ```yaml
 env:
@@ -159,7 +159,7 @@ The included `scripts/validate-aasa.sh` validates your AASA configuration agains
 - [Privacy Policy Guide](https://orbitkit.io/api#privacy-policy) — policy schema and field definitions
 - [AASA Guide](https://orbitkit.io/api#aasa) — Universal Links, App Clips, Web Credentials setup
 - [Custom Domains](https://orbitkit.io/api#custom-domains) — DNS configuration and SSL provisioning
-- [GitHub Action](https://github.com/IamGoodBad/OrbitKit-Deploy) — deploy from GitHub Actions
+- [GitHub Action](https://github.com/OrbitKit-io/OrbitKit-Deploy) — deploy from GitHub Actions
 
 ## Man Page
 
