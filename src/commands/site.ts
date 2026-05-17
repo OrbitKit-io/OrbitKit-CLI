@@ -29,17 +29,105 @@ export function registerSiteCommands(program: Command, env: EnvConfig): void {
     .option("--name <name>", "App name")
     .option("--description <desc>", "App description")
     .option("--slug <slug>", "Site slug")
-    .action(async (argAppId: string | undefined, opts: { name?: string; description?: string; slug?: string }) => {
+    .option(
+      "--search-indexing <true|false>",
+      "Allow search engines to index hosted pages (default true). TestFlight beta pages are always excluded regardless.",
+    )
+    .action(async (argAppId: string | undefined, opts: { name?: string; description?: string; slug?: string; searchIndexing?: string }) => {
       requireApiKey(env);
       const appId = resolveAppId(argAppId, env);
-      const body: Record<string, string> = {};
+      const body: Record<string, string | boolean> = {};
       if (opts.name) body.appName = opts.name;
       if (opts.description) body.description = opts.description;
       if (opts.slug) body.slug = opts.slug;
+      if (opts.searchIndexing !== undefined) {
+        const v = opts.searchIndexing.toLowerCase();
+        if (v !== "true" && v !== "false") {
+          throw new Error("--search-indexing must be 'true' or 'false'");
+        }
+        body.searchIndexing = v === "true";
+      }
       const client = new OrbitKitClient(env);
       const res = await client.patch(`/api/apps/${encodeURIComponent(appId)}/site`, body);
       assertOk(res);
-      printSuccess("Site updated.");
+      printSuccess(
+        opts.searchIndexing !== undefined
+          ? `Site updated. Run \`orbitkit deploy ${appId}\` to publish the indexing change.`
+          : "Site updated.",
+      );
+    });
+
+  // Custom homepage HTML subcommands
+  const customHtml = site
+    .command("custom-html")
+    .description("Manage custom homepage HTML (replaces the default hero section)");
+
+  customHtml
+    .command("set")
+    .description("Set custom homepage HTML from a string or file")
+    .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
+    .option("--file <path>", "Read HTML from file (max 50KB)")
+    .option("--html <html>", "Inline HTML string")
+    .action(async (argAppId: string | undefined, opts: { file?: string; html?: string }) => {
+      requireApiKey(env);
+      const appId = resolveAppId(argAppId, env);
+      let html: string;
+      if (opts.file) {
+        html = fs.readFileSync(opts.file, "utf-8");
+      } else if (opts.html) {
+        html = opts.html;
+      } else {
+        throw new Error("Provide --file <path> or --html <string>");
+      }
+      const sizeBytes = Buffer.byteLength(html, "utf-8");
+      if (sizeBytes > 51200) {
+        throw new Error(`Custom HTML is ${sizeBytes} bytes — max is 51200 bytes (50KB)`);
+      }
+      const client = new OrbitKitClient(env);
+      const res = await client.patch(
+        `/api/apps/${encodeURIComponent(appId)}/site`,
+        { customHomepageHtml: html },
+      );
+      assertOk(res);
+      printSuccess(`Custom homepage HTML set (${sizeBytes} bytes). Run \`orbitkit deploy ${appId}\` to publish.`);
+    });
+
+  customHtml
+    .command("clear")
+    .description("Clear custom homepage HTML and revert to the default hero section")
+    .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
+    .action(async (argAppId?: string) => {
+      requireApiKey(env);
+      const appId = resolveAppId(argAppId, env);
+      const client = new OrbitKitClient(env);
+      const res = await client.patch(
+        `/api/apps/${encodeURIComponent(appId)}/site`,
+        { customHomepageHtml: "" },
+      );
+      assertOk(res);
+      printSuccess("Custom homepage HTML cleared. Run `orbitkit deploy` to publish.");
+    });
+
+  customHtml
+    .command("get")
+    .description("Print the currently saved custom homepage HTML")
+    .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
+    .action(async (argAppId?: string) => {
+      requireApiKey(env);
+      const appId = resolveAppId(argAppId, env);
+      const client = new OrbitKitClient(env);
+      const res = await client.get(`/api/apps/${encodeURIComponent(appId)}/site`);
+      const data = assertOk(res) as { customHomepageHtml?: string } | null;
+      const html = data?.customHomepageHtml ?? "";
+      if (env.json) {
+        printData({ customHomepageHtml: html }, true);
+      } else if (!html) {
+        // eslint-disable-next-line no-console
+        console.log("(no custom homepage HTML set — using default hero section)");
+      } else {
+        // eslint-disable-next-line no-console
+        console.log(html);
+      }
     });
 
   site

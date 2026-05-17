@@ -3,7 +3,7 @@
 .TH ORBITKIT 1 "2026-03-12" "1.0.0" "OrbitKit CLI Manual"
 .
 .SH NAME
-orbitkit \- CLI for OrbitKit App Store compliance hosting for iOS developers
+orbitkit \- CLI for OrbitKit privacy policy hosting for iOS developers
 .
 .SH SYNOPSIS
 .B orbitkit
@@ -98,13 +98,32 @@ the OrbitKit policy schema (see the API docs for field definitions).
 Print the current site configuration (name, slug, icon URL,
 domain, subscription status).
 .TP
-.BI "site update " [ appId ] " " [ \-\-name " " name ] " " [ \-\-description " " desc ] " " [ \-\-slug " " slug ]
+.BI "site update " [ appId ] " " [ \-\-name " " name ] " " [ \-\-description " " desc ] " " [ \-\-slug " " slug ] " " [ \-\-search\-indexing " " true|false ]
 Update site properties. Only provided fields are changed.
+.B \-\-search\-indexing
+controls whether search engines may index the hosted pages (default
+.BR true ).
+TestFlight beta pages are always excluded from search regardless of
+this setting. A deploy is required for the change to take effect.
 .TP
 .BI "site icon " [ appId ] " " file
-Upload an app icon (PNG or JPEG, max 2\ MB). The icon is
-automatically processed: resized, re-encoded to strip EXIF
-payloads, and the dominant color is extracted for theming.
+Upload an app icon (PNG, JPEG, or WebP, max 2\ MB). The icon is
+automatically processed: resized to 512\(mu512 PNG, re-encoded to
+strip EXIF payloads, and the dominant color is extracted for theming.
+.TP
+.BI "site custom-html set " [ appId ] " " [ \-\-file " " path ] " " [ \-\-html " " string ]
+Replace the default homepage hero with custom HTML (max 50\ KB).
+Provide
+.B \-\-file
+or
+.BR \-\-html .
+Sanitized server-side; a deploy is required to publish.
+.TP
+.BI "site custom-html clear " [ appId ]
+Clear custom homepage HTML and revert to the default hero section.
+.TP
+.BI "site custom-html get " [ appId ]
+Print the currently saved custom homepage HTML.
 .TP
 .BI "site domain set " [ appId ] " " domain
 Configure a custom domain (e.g., privacy.myapp.com). Returns
@@ -157,6 +176,25 @@ Upload AASA configuration from a JSON file. The file should
 contain universalLinks, appClips, webCredentials, and/or
 activityContinuation objects. Each contains an appIDs array
 with entries in the format "TEAMID.com.example.app".
+.
+.SS Privacy Manifest
+.TP
+.BI "privacy-manifest get " [ appId ]
+Print the saved \fBPrivacyInfo.xcprivacy\fR configuration.
+.TP
+.BI "privacy-manifest set " [ appId ] " " file
+Upload the privacy manifest configuration from a JSON file.
+.TP
+.BI "privacy-manifest sync " [ appId ]
+Derive the manifest from the privacy-policy wizard answers so the
+bundled file and the hosted policy stay consistent.
+.TP
+.BI "privacy-manifest download " [ appId ] " " [ \-o " " path ]
+Download the generated \fBPrivacyInfo.xcprivacy\fR file (wire into an
+Xcode build phase to avoid ITMS-91053).
+.TP
+.B "privacy-manifest reference"
+Print Apple's Required Reason API reference data.
 .
 .SS Smart App Banner
 .TP
@@ -303,7 +341,7 @@ App ID         Name              Created
 \-NtestApp123   My Weather App    3/15/2025
 
 $ orbitkit deploy \-NtestApp123
-\(ok Deployed: https://sites.orbitkit.io/my-weather-app/
+✓ Deployed: https://sites.orbitkit.io/my-weather-app/
 .RE
 .fi
 .
@@ -323,10 +361,10 @@ $ orbitkit deploy
 .nf
 .RS
 $ orbitkit policy set policy.json
-\(ok Policy updated.
+✓ Policy updated.
 
 $ orbitkit deploy
-\(ok Deployed: https://sites.orbitkit.io/my-weather-app/
+✓ Deployed: https://sites.orbitkit.io/my-weather-app/
 .RE
 .fi
 .
@@ -344,7 +382,7 @@ $ cat testflight.json
 }
 
 $ orbitkit testflight set testflight.json
-\(ok TestFlight page updated.
+✓ TestFlight page updated.
 .RE
 .fi
 .
@@ -353,7 +391,7 @@ $ orbitkit testflight set testflight.json
 .nf
 .RS
 $ orbitkit well\-known upload apple\-developer\-merchantid\-domain\-association
-\(ok Uploaded apple\-developer\-merchantid\-domain\-association
+✓ Uploaded apple\-developer\-merchantid\-domain\-association
 .RE
 .fi
 .
@@ -396,7 +434,7 @@ env:
   ORBITKIT_APP_ID: ${{ vars.ORBITKIT_APP_ID }}
 
 steps:
-  \- run: npx orbitkit deploy
+  \- run: npx @orbitkit-io/cli deploy
 .RE
 .fi
 .
@@ -443,7 +481,7 @@ standard and degrades gracefully on dumb terminals.
 .
 .SH BUGS
 Report bugs at
-.UR https://github.com/OrbitKit-io/OrbitKit-CLI/issues
+.UR https://github.com/IamGoodBad/OrbitKit-CLI/issues
 .UE .
 .
 .SH SEE ALSO

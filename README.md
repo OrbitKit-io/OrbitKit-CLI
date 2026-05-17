@@ -5,10 +5,10 @@ Command-line interface for [OrbitKit](https://orbitkit.io) — App Store complia
 ## Installation
 
 ```bash
-npm install -g orbitkit
+npm install -g @orbitkit-io/cli
 ```
 
-Requires Node.js 22 or later.
+Requires Node.js 22 or later. The installed command is `orbitkit`.
 
 ## Quick Start
 
@@ -61,11 +61,26 @@ orbitkit deploy
 | Command | Description |
 |---------|-------------|
 | `orbitkit site get [appId]` | Print site config |
-| `orbitkit site update [appId]` | Update name, description, or slug |
-| `orbitkit site icon [appId] <file>` | Upload app icon |
+| `orbitkit site update [appId]` | Update name, description, slug, or `--search-indexing <true\|false>` |
+| `orbitkit site icon [appId] [file]` | Upload app icon |
+| `orbitkit site custom-html set [appId]` | Set custom homepage HTML (`--file` or `--html`) |
+| `orbitkit site custom-html get [appId]` | Print saved custom homepage HTML |
+| `orbitkit site custom-html clear [appId]` | Revert to the default hero |
 | `orbitkit site domain set [appId] <domain>` | Configure custom domain |
 | `orbitkit site domain status [appId]` | Check DNS/SSL status |
 | `orbitkit site domain remove [appId]` | Remove custom domain |
+
+`--search-indexing` controls whether search engines may index the hosted pages (default `true`); TestFlight beta pages are always excluded. A deploy is required for the change to take effect.
+
+### Privacy Manifest
+
+| Command | Description |
+|---------|-------------|
+| `orbitkit privacy-manifest get [appId]` | Print the `PrivacyInfo.xcprivacy` config |
+| `orbitkit privacy-manifest set [appId] <file>` | Upload manifest config from JSON |
+| `orbitkit privacy-manifest sync [appId]` | Derive the manifest from your privacy-policy wizard answers |
+| `orbitkit privacy-manifest download [appId] [-o path]` | Download the generated `PrivacyInfo.xcprivacy` |
+| `orbitkit privacy-manifest reference` | Apple Required Reason API reference data |
 
 ### Support Page
 
@@ -171,4 +186,4 @@ man orbitkit
 
 ## License
 
-Copyright OrbitKit. All rights reserved.
+[Apache License 2.0](LICENSE) © OrbitKit, Inc.
