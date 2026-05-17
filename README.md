@@ -1,5 +1,9 @@
 # OrbitKit CLI
 
+[![npm version](https://img.shields.io/npm/v/@orbitkit-io/cli?color=blue)](https://www.npmjs.com/package/@orbitkit-io/cli)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
+
 Command-line interface for [OrbitKit](https://orbitkit.io) — App Store compliance hosting for iOS developers. Manage your apps, privacy policies, support pages, app site association files, and deployments from the terminal or CI/CD pipelines.
 
 ## Installation

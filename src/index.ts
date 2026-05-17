@@ -31,7 +31,7 @@ const program = new Command();
 program
   .name("orbitkit")
   .description("CLI for OrbitKit — App Store compliance hosting for iOS developers")
-  .version("1.0.0")
+  .version("1.1.0")
   .option("--json", "Output as JSON (machine-readable)")
   .option("--debug", "Enable debug output")
   .hook("preAction", (_thisCommand, actionCommand) => {
