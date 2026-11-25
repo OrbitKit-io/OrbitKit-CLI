@@ -5,14 +5,17 @@ import { OrbitKitClient } from "../client";
 import { EnvConfig, requireApiKey, resolveAppId } from "../env";
 import { assertOk } from "../utils/errors";
 import { printData, printSuccess } from "../utils/output";
+import { appAndArg } from "../utils/pages";
 
 /**
  * `orbitkit privacy-manifest …` commands for the iOS PrivacyInfo.xcprivacy file.
  *
  *   orbitkit privacy-manifest get [appId]          — show the saved JSON config
  *   orbitkit privacy-manifest set [appId] <file>   — upload JSON config
- *   orbitkit privacy-manifest sync [appId]         — derive a starter from the
- *                                                    privacy wizard (read-only)
+ *   orbitkit privacy-manifest apis [appId] <file>  — save only the Required
+ *                                                    Reason APIs
+ *   orbitkit privacy-manifest sync [appId]         — derive from the privacy
+ *                                                    answers (read-only)
  *   orbitkit privacy-manifest download [appId]     — download .xcprivacy file
  *                                                    (use --out to specify path)
  *   orbitkit privacy-manifest reference            — list Apple's allowlists
@@ -24,7 +27,7 @@ export function registerPrivacyManifestCommands(program: Command, env: EnvConfig
 
   pm
     .command("get")
-    .description("Show the saved privacy manifest config (or a wizard-derived starter)")
+    .description("Show the saved privacy manifest config (or a starter derived from the privacy answers)")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
     .action(async (argAppId?: string) => {
       requireApiKey(env);
@@ -58,8 +61,32 @@ export function registerPrivacyManifestCommands(program: Command, env: EnvConfig
     });
 
   pm
+    .command("apis")
+    .description("Save only the Required Reason APIs from a JSON file: [{ category, reasons }] or { accessedAPIs }")
+    .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
+    .argument("[file]", "Path to JSON file")
+    .action(async (first?: string, second?: string) => {
+      requireApiKey(env);
+      const [argAppId, file] = appAndArg(first, second);
+      const appId = resolveAppId(argAppId, env);
+      if (!file) {
+        process.stderr.write("Error (E2001): A JSON file is required.\n");
+        process.exit(2);
+      }
+      const parsed = JSON.parse(fs.readFileSync(file, "utf-8"));
+      const body = Array.isArray(parsed) ? { accessedAPIs: parsed } : parsed;
+      const res = await new OrbitKitClient(env).put(
+        `/api/apps/${encodeURIComponent(appId)}/privacy-manifest/accessed-apis`,
+        body
+      );
+      const data = assertOk(res);
+      if (env.json) return printData(data, true);
+      printSuccess("Required Reason APIs saved.");
+    });
+
+  pm
     .command("sync")
-    .description("Show a privacy manifest config freshly derived from the privacy wizard (read-only)")
+    .description("Show a config freshly derived from the app profile's privacy answers (read-only; deprecated: use `orbitkit profile`)")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
     .action(async (argAppId?: string) => {
       requireApiKey(env);

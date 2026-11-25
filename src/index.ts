@@ -23,6 +23,8 @@ import { registerPrivacyManifestCommands } from "./commands/privacy-manifest";
 import { registerBannerCommands } from "./commands/banner";
 import { registerWellKnownCommands } from "./commands/well-known";
 import { registerTestFlightCommands } from "./commands/testflight";
+import { registerOverviewCommands } from "./commands/overview";
+import { registerBillingCommands } from "./commands/billing";
 
 const env = loadEnv();
 
@@ -31,7 +33,7 @@ const program = new Command();
 program
   .name("orbitkit")
   .description("CLI for OrbitKit — App Store compliance hosting for iOS developers")
-  .version("1.1.0")
+  .version("1.2.0")
   .option("--json", "Output as JSON (machine-readable)")
   .option("--debug", "Enable debug output")
   .hook("preAction", (_thisCommand, actionCommand) => {
@@ -57,6 +59,8 @@ registerPrivacyManifestCommands(program, env);
 registerBannerCommands(program, env);
 registerWellKnownCommands(program, env);
 registerTestFlightCommands(program, env);
+registerOverviewCommands(program, env);
+registerBillingCommands(program, env);
 
 // Handle SIGINT gracefully (per CLI best practices)
 process.on("SIGINT", () => {

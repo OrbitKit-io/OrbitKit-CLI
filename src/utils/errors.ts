@@ -13,10 +13,10 @@ interface ErrorBody {
 }
 
 const ERROR_GUIDANCE: Record<string, string> = {
-  UNAUTHORIZED: "Check your API key. Set ORBITKIT_API_KEY or create a new key at the dashboard.",
+  UNAUTHORIZED: "Check your API key. Set ORBITKIT_API_KEY or create a new key at https://orbitkit.io/account/.",
   FORBIDDEN: "You don't have permission. Verify the app ID and your account access.",
   NOT_FOUND: "Resource not found. Check the app ID and resource name.",
-  SUBSCRIPTION_REQUIRED: "An active subscription is required. Visit https://orbitkit.io/dashboard to subscribe.",
+  SUBSCRIPTION_REQUIRED: "Run `orbitkit subscribe` to get a link to subscribe, or subscribe at https://orbitkit.io/dashboard/.",
   VALIDATION_FAILED: "Invalid input. Check the data format and try again.",
   RATE_LIMITED: "Rate limit exceeded. Wait a moment and try again.",
   APP_LIMIT_REACHED: "App limit reached. Delete an existing app or upgrade your plan.",

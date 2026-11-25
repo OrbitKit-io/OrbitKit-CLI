@@ -4,6 +4,7 @@ import { OrbitKitClient } from "../client";
 import { EnvConfig, requireApiKey, resolveAppId } from "../env";
 import { assertOk } from "../utils/errors";
 import { printSuccess, printError } from "../utils/output";
+import { appAndArg } from "../utils/pages";
 
 const ALLOWED_FILES = [
   "apple-developer-domain-association.txt",
@@ -12,9 +13,30 @@ const ALLOWED_FILES = [
 ];
 
 export function registerWellKnownCommands(program: Command, env: EnvConfig): void {
-  program
+  const wellKnown = program
     .command("well-known")
-    .description("Upload well-known files (SIWA, Apple Pay, Wallet)")
+    .description("Upload or remove well-known files (SIWA, Apple Pay, Wallet)");
+
+  wellKnown
+    .command("remove")
+    .description("Remove an uploaded well-known file (the live site changes on the next deploy)")
+    .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")
+    .argument("[fileName]", `One of: ${ALLOWED_FILES.join(", ")}`)
+    .action(async (first?: string, second?: string) => {
+      requireApiKey(env);
+      const [argAppId, name] = appAndArg(first, second);
+      const appId = resolveAppId(argAppId, env);
+      if (!name || !ALLOWED_FILES.includes(name)) {
+        printError(`Unknown file: ${name ?? ""}`);
+        process.stderr.write(`  Allowed files: ${ALLOWED_FILES.join(", ")}\n`);
+        process.exit(2);
+      }
+      const res = await new OrbitKitClient(env).delete(`/api/apps/${encodeURIComponent(appId)}/well-known/${encodeURIComponent(name)}`);
+      assertOk(res);
+      printSuccess(`Removed ${name}. Deploy to update the live site.`);
+    });
+
+  wellKnown
     .command("upload")
     .description("Upload a well-known file")
     .argument("[appId]", "App ID (or set ORBITKIT_APP_ID)")

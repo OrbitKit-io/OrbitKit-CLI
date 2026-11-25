@@ -45,7 +45,7 @@ export function requireApiKey(env: EnvConfig): string {
   if (!env.apiKey) {
     process.stderr.write(
       "Error (E3001): API key required. Set ORBITKIT_API_KEY environment variable.\n" +
-      "  Create an API key at https://orbitkit.io/dashboard (Settings → API Keys).\n"
+      "  Create an API key at https://orbitkit.io/account/ (API Keys; a card on file is required).\n"
     );
     process.exit(3);
   }
