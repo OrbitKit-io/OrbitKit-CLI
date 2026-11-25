@@ -1,6 +1,6 @@
 .\" Man page for the OrbitKit CLI
 .\" Generate with: groff -man -Tascii orbitkit.1
-.TH ORBITKIT 1 "2026-03-12" "1.0.0" "OrbitKit CLI Manual"
+.TH ORBITKIT 1 "2026-11-24" "1.2.0" "OrbitKit CLI Manual"
 .
 .SH NAME
 orbitkit \- CLI for OrbitKit privacy policy hosting for iOS developers
@@ -53,6 +53,10 @@ Display help for the given command or the main program.
 Display the authenticated user's email, name, app count, and
 subscription status. Useful for verifying that your API key is
 valid and correctly configured.
+.TP
+.B status
+Show subscription status and plan, app count, published (subscribed)
+site count, and whether a payment method is on file.
 .
 .SS App Management
 .TP
@@ -70,6 +74,20 @@ well-known files, deploy history). Prompts for confirmation unless
 .B \-y
 is passed.
 .B This action is irreversible.
+.TP
+.BI "overview " [ appId ]
+Show each capability's status, whether the published site is out of
+date, what still blocks publishing, and the live URLs to paste into
+App Store Connect.
+.TP
+.BI "profile get " [ appId ]
+Print the app profile: app name, developer, contact emails, App Store
+link, and the privacy answers the policy, labels and manifest are
+generated from.
+.TP
+.BI "profile set " [ appId ] " " file
+Update the app profile from a JSON file. Only the fields in the file
+change; \fBprivacy\fR replaces all privacy answers.
 .
 .SS Deploy
 .TP
@@ -81,16 +99,33 @@ and publishes them. Requires an active subscription.
 .BI "deploy\-history " [ appId ]
 Show the deploy history for the app. Lists deploy timestamps,
 included pages, and site URLs. Newest deploys are listed first
-(max 50 entries).
+(max 50 entries). With
+.BI \-\-entry " id"
+it lists that deploy's pages as published, and with
+.BI \-\-out " dir"
+writes each one to \fIdir\fR/\fIpage\fR.html.
+.TP
+.BI "preview " [ appId ] " " [ \-\-out " " dir ]
+Render every page without publishing (no subscription needed). Lists
+the pages, or writes them to \fIdir\fR with
+.BR \-\-out .
 .
 .SS Privacy Policy
 .TP
 .BI "policy get " [ appId ]
-Print the current privacy policy wizard data as JSON.
+Print the current privacy policy answers as JSON.
 .TP
 .BI "policy set " [ appId ] " " file
 Upload a privacy policy from a JSON file. The file should match
 the OrbitKit policy schema (see the API docs for field definitions).
+Warnings about answers that still block publishing are printed.
+.TP
+.BI "policy versions " [ appId ] " " [ \-\-limit " " n ] " " [ \-\-start\-after " " snapshotAt ]
+List the policy snapshots taken on each deploy, newest first.
+.TP
+.BI "policy version " [ appId ] " " versionId " " [ \-\-out " " dir ]
+Print one snapshot's answers as JSON, or write its published pages
+to \fIdir\fR.
 .
 .SS Site Configuration
 .TP
@@ -186,8 +221,13 @@ Print the saved \fBPrivacyInfo.xcprivacy\fR configuration.
 Upload the privacy manifest configuration from a JSON file.
 .TP
 .BI "privacy-manifest sync " [ appId ]
-Derive the manifest from the privacy-policy wizard answers so the
-bundled file and the hosted policy stay consistent.
+Print a configuration derived from the app profile's privacy answers
+(read-only; data types are now edited with \fBprofile set\fR).
+.TP
+.BI "privacy-manifest apis " [ appId ] " " file
+Save only the Required Reason APIs from a JSON file (an array of
+\fB{ category, reasons }\fR, or \fB{ accessedAPIs: [...] }\fR),
+leaving the data types and tracking answers as they are.
 .TP
 .BI "privacy-manifest download " [ appId ] " " [ \-o " " path ]
 Download the generated \fBPrivacyInfo.xcprivacy\fR file (wire into an
@@ -224,6 +264,10 @@ Supported files:
 .B apple\-wallet\-order\-type\-association
 \(em Apple Wallet Order Tracking domain verification
 .RE
+.TP
+.BI "well\-known remove " [ appId ] " " fileName
+Remove an uploaded well-known file. The live site changes with the
+next deploy.
 .
 .SS TestFlight Page
 .TP
@@ -236,6 +280,30 @@ enabled (boolean), testFlightUrl (https://testflight.apple.com/join/XXXXXX),
 feedbackEmail. Optional: betaDescription (max 2000 chars),
 requirements (max 500 chars).
 .
+.SS Billing
+.TP
+.BI "subscribe " [ appId ] " " [ \-\-plan " " yearly | monthly ]
+Publish the app. With an active subscription it is deployed and takes
+a seat. Without one, prints a Stripe Checkout link to open in a
+browser; the app is published once payment completes.
+.TP
+.BI "plan preview " plan
+Show what switching to \fBmonthly\fR or \fByearly\fR would invoice
+today, without changing anything.
+.TP
+.BI "plan change " plan
+Switch plans. Bills today: the new plan for every site, minus unused
+time on the current one.
+.TP
+.B cancel
+Cancel the subscription at the end of the billing period.
+.TP
+.B reactivate
+Undo a pending cancellation.
+.TP
+.B invoices
+List recent invoices with links to their PDFs.
+.
 .SH ENVIRONMENT
 .TP
 .B ORBITKIT_API_KEY
@@ -243,7 +311,8 @@ requirements (max 500 chars).
 API key for authentication. Keys use the
 .B ok_
 prefix, which enables GitHub secret scanning auto-detection.
-Create keys in the OrbitKit dashboard under Settings \(-> API Keys.
+Create keys at https://orbitkit.io/account/ under API Keys (a card on
+file is required).
 .TP
 .B ORBITKIT_APP_ID
 .RI ( optional )

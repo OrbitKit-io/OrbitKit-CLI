@@ -17,7 +17,7 @@ Requires Node.js 22 or later. The installed command is `orbitkit`.
 ## Quick Start
 
 ```bash
-# Set your API key (get one at https://orbitkit.io/dashboard → Settings → API Keys)
+# Set your API key (create one at https://orbitkit.io/account/ → API Keys)
 export ORBITKIT_API_KEY=ok_...
 
 # Verify your key works
@@ -37,6 +37,7 @@ orbitkit deploy
 | Command | Description |
 |---------|-------------|
 | `orbitkit whoami` | Display authenticated user info |
+| `orbitkit status` | Subscription status, app and published site counts |
 
 ### App Management
 
@@ -45,13 +46,18 @@ orbitkit deploy
 | `orbitkit apps list` | List all apps |
 | `orbitkit apps create <name>` | Create a new app |
 | `orbitkit apps delete <appId>` | Delete an app |
+| `orbitkit overview [appId]` | Capability status, what blocks publishing, live URLs |
+| `orbitkit profile get [appId]` | Print the app profile (app info and privacy answers) |
+| `orbitkit profile set [appId] <file>` | Update the app profile from JSON (only the fields in the file) |
 
 ### Deploy
 
 | Command | Description |
 |---------|-------------|
 | `orbitkit deploy [appId]` | Deploy site to production |
+| `orbitkit preview [appId] [--out dir]` | Render the site without publishing |
 | `orbitkit deploy-history [appId]` | Show deploy history |
+| `orbitkit deploy-history [appId] --entry <id> [--out dir]` | One deploy's pages as published |
 
 ### Privacy Policy
 
@@ -59,6 +65,8 @@ orbitkit deploy
 |---------|-------------|
 | `orbitkit policy get [appId]` | Print current policy data |
 | `orbitkit policy set [appId] <file>` | Upload policy from JSON file |
+| `orbitkit policy versions [appId]` | Policy snapshots taken on each deploy |
+| `orbitkit policy version [appId] <versionId> [--out dir]` | One snapshot's answers, or its published pages |
 
 ### Site Configuration
 
@@ -82,7 +90,8 @@ orbitkit deploy
 |---------|-------------|
 | `orbitkit privacy-manifest get [appId]` | Print the `PrivacyInfo.xcprivacy` config |
 | `orbitkit privacy-manifest set [appId] <file>` | Upload manifest config from JSON |
-| `orbitkit privacy-manifest sync [appId]` | Derive the manifest from your privacy-policy wizard answers |
+| `orbitkit privacy-manifest apis [appId] <file>` | Save only the Required Reason APIs |
+| `orbitkit privacy-manifest sync [appId]` | Derive the manifest from the privacy answers (read-only) |
 | `orbitkit privacy-manifest download [appId] [-o path]` | Download the generated `PrivacyInfo.xcprivacy` |
 | `orbitkit privacy-manifest reference` | Apple Required Reason API reference data |
 
@@ -119,6 +128,7 @@ orbitkit deploy
 | Command | Description |
 |---------|-------------|
 | `orbitkit well-known upload [appId] <file>` | Upload well-known file (Sign in with Apple, Apple Pay, Wallet) |
+| `orbitkit well-known remove [appId] <fileName>` | Remove an uploaded well-known file |
 
 ### TestFlight Landing Page
 
@@ -126,6 +136,19 @@ orbitkit deploy
 |---------|-------------|
 | `orbitkit testflight get [appId]` | Print TestFlight page config |
 | `orbitkit testflight set [appId] <file>` | Upload from JSON file |
+
+### Billing
+
+| Command | Description |
+|---------|-------------|
+| `orbitkit subscribe [appId] [--plan yearly\|monthly]` | Publish; without a subscription, prints a Stripe Checkout link |
+| `orbitkit plan preview <plan>` | What switching plans would invoice today |
+| `orbitkit plan change <plan>` | Switch between monthly and yearly |
+| `orbitkit cancel` | Cancel at the end of the billing period |
+| `orbitkit reactivate` | Undo a pending cancellation |
+| `orbitkit invoices` | List recent invoices |
+
+API keys and payment methods are managed in the browser at https://orbitkit.io/account/.
 
 ## Global Options
 
@@ -140,7 +163,7 @@ orbitkit deploy
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ORBITKIT_API_KEY` | Yes | API key (`ok_...`) from the [dashboard](https://orbitkit.io/dashboard) |
+| `ORBITKIT_API_KEY` | Yes | API key (`ok_...`) from your [account page](https://orbitkit.io/account/) |
 | `ORBITKIT_APP_ID` | No | Default app ID when `[appId]` is omitted |
 | `ORBITKIT_API_ENDPOINT` | No | API base URL (default: `https://api.orbitkit.io`) |
 | `NO_COLOR` | No | Disable colored output ([no-color.org](https://no-color.org/)) |
@@ -173,7 +196,7 @@ The included `scripts/validate-aasa.sh` validates your AASA configuration agains
 
 ## Documentation
 
-- [OrbitKit Dashboard](https://orbitkit.io/dashboard) — manage your apps and API keys
+- [OrbitKit Dashboard](https://orbitkit.io/dashboard/) — manage your apps; API keys are on the [account page](https://orbitkit.io/account/)
 - [API Documentation](https://orbitkit.io/api) — full REST API reference
 - [Privacy Policy Guide](https://orbitkit.io/api#privacy-policy) — policy schema and field definitions
 - [AASA Guide](https://orbitkit.io/api#aasa) — Universal Links, App Clips, Web Credentials setup
